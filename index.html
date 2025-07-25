@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🚀 JS Obfuscator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 🎨 THEME & COLOR PALETTE (From Firebase Dashboard) 🎨 */
+        :root {
+            --color-accent: #3b82f6;
+            --color-accent-danger: #ef4444;
+            --color-background: #f1f5f9;
+            --color-foreground: #0f172a;
+            --color-card: #ffffff;
+            --color-card-foreground: #0f172a;
+            --color-muted-foreground: #64748b;
+            --color-border: #e2e8f0;
+            --shadow-color: 220 3% 15%;
+        }
+
+        html.dark {
+            --color-accent: #60a5fa;
+            --color-accent-danger: #f87171;
+            --color-background: #020617;
+            --color-foreground: #f8fafc;
+            --color-card: #0f172a;
+            --color-card-foreground: #f8fafc;
+            --color-muted-foreground: #94a3b8;
+            --color-border: #1e293b;
+            --shadow-color: 220 40% 2%;
+        }
+
+        /* 🖌️ BASE & RESET STYLES 🖌️ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-foreground);
+            line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 📄 LAYOUT & CONTAINER 📄 */
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex-grow: 1;
+            width: 100%;
+        }
+
+        /* 🏠 HEADER 🏠 */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--color-border);
+            animation: fadeInDown 0.5s ease-out;
+        }
+
+        .dashboard-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--color-foreground);
+        }
+
+        .theme-toggle-btn {
+            background-color: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            display: grid;
+            place-items: center;
+            cursor: pointer;
+            color: var(--color-muted-foreground);
+            transition: all 0.2s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+        }
+
+        .theme-toggle-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* obfuscator CARD STYLES */
+        .card {
+            background: var(--color-card);
+            border-radius: 16px;
+            border: 1px solid var(--color-border);
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(var(--shadow-color), 0.03), 0 2px 4px -2px rgba(var(--shadow-color), 0.03);
+            animation: fadeIn 0.5s 0.2s ease-out both;
+        }
+
+        .field-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .field-label {
+            display: block;
+            font-weight: 500;
+            color: var(--color-card-foreground);
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.9rem;
+            background-color: var(--color-background);
+            color: var(--color-foreground);
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(var(--color-accent), 0.2);
+        }
+
+        .actions-bar {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .action-btn {
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: var(--color-accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            transition: opacity 0.2s ease;
+        }
+
+        .action-btn:hover {
+            opacity: 0.9;
+        }
+
+        .copy-btn {
+            background-color: var(--color-card);
+            color: var(--color-accent);
+            border: 1px solid var(--color-accent);
+        }
+
+        /* TOAST NOTIFICATION */
+        #toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translate(-50%, 100px);
+            background-color: var(--color-foreground);
+            color: var(--color-background);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-in-out;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        #toast-notification.show {
+            transform: translate(-50%, 0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* FOOTER */
+        .app-footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--color-muted-foreground);
+            font-size: 0.875rem;
+        }
+
+        .app-footer a {
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <header class="dashboard-header">
+            <h1 class="dashboard-title">🚀 JS Obfuscator</h1>
+            <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme"></button>
+        </header>
+
+        <main class="card">
+            <div class="field-group">
+                <label for="input-code" class="field-label">JavaScript Code to Obfuscate</label>
+                <textarea id="input-code" placeholder="alert('Hello, World!');"></textarea>
+            </div>
+
+            <div class="actions-bar">
+                <button id="obfuscate-btn" class="action-btn">Obfuscate</button>
+                <button id="copy-btn" class="action-btn copy-btn">Copy Output</button>
+            </div>
+
+            <div class="field-group">
+                <label for="output-code" class="field-label">Obfuscated Output</label>
+                <textarea id="output-code" readonly placeholder="Your obfuscated code will appear here..."></textarea>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            Made with ❤️ by <a href="https://github.com/avdeshjadon-dev" target="_blank" rel="noopener noreferrer">Avdesh
+                Jadon</a>
+        </footer>
+    </div>
+
+    <div id="toast-notification"></div>
+
+    <script id="js-obfuscator-logic">
+
+        const option = {
+            useVariable: true,
+        };
+
+        const blacklist = {
+            // Basic
+            upperCase: true,
+            lowerCase: true,
+            number: false,
+
+            // Special
+            space: false,
+            dollar: false, // $
+            percent: false, // %
+            asterisk: false, // *
+            underscore: false, // _
+            equals: false, // =
+            singleQuotes: false, // '
+            doubleQuotes: false, // "
+            backtick: false, // `
+            dot: false, // .
+            slash: false, // /
+            backslash: false, // \
+            curlyBrackets: false, // { or }
+            angleBrackets: false, // < or >
+        };
+
+        // Memoization
+        let internalResults = {};
+        let digitResults = {};
+        let characterResults = {};
+
+        const resetResults = () => {
+            internalResults = {};
+            digitResults = {};
+            characterResults = {};
+        };
+
+        const INTERNAL = {
+            false: {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `![]`;
+                },
+            },
+            true: {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `!![]`;
+                },
+            },
+            undefined: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    return `[][[]]`;
+                },
+            },
+            NaN: {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `+[![]]`;
+                },
+            },
+            Infinity: {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.slash) return `${makeDigit(1)}/${makeDigit(0)}`;
+                    if (!blacklist.number) return `+(1+${makeCharacter("e")}+1000)`;
+                    return `+(${makeDigit(1)}+${makeCharacter("e")}+[${makeDigit(
+                        1
+                    )}]+[${makeDigit(0)}]+[${makeDigit(0)}]+[${makeDigit(0)}])`;
+                },
+            },
+            1.1e101: {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return `+(11+${makeCharacter("e")}+100)`;
+                    return `+(${makeDigit(1)}+[${makeDigit(1)}]+${makeCharacter(
+                        "e"
+                    )}+[${makeDigit(1)}]+[${makeDigit(0)}]+[${makeDigit(0)}])`;
+                },
+            },
+            "function flat() { [native code] }": {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `[][${makeString("flat")}]+[]`;
+                },
+            },
+            "function String() { [native code] }": {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `([]+[])[${makeString("constructor")}]+[]`;
+                },
+            },
+            "[object Object]": {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `[]+{}`;
+                },
+            },
+            "[object Array Iterator]": {
+                isWrap: () => {
+                    return false;
+                },
+                result: () => {
+                    return `[][${makeString("entries")}]()+[]`;
+                },
+            },
+            "<sub></sub>": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    return `([]+[])[${makeString("sub")}]()`;
+                },
+            },
+            '<font color="undefined"></font>': {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    return `([]+[])[${makeString("fontcolor")}]()`;
+                },
+            },
+            "function%20flat%28%29%20%7B%20%5Bnative%20code%5D%20%7D": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    return makeEval(makeString('return escape([]["flat"])'));
+                },
+            },
+            "%3Csub%3E%3C/sub%3E": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    return makeEval(makeString('return escape(([]+[])["sub"]())'));
+                },
+            },
+        };
+
+        const DIGIT = {
+            0: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 0;
+                    return `+[]`;
+                },
+            },
+            1: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 1;
+                    return `+${makeInternal(true)}`;
+                },
+            },
+            2: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 2;
+                    return `${makeInternal(true)}+${makeInternal(true)}`;
+                },
+            },
+            3: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 3;
+                    return `${makeDigit(2)}+${makeInternal(true)}`;
+                },
+            },
+            4: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 4;
+                    if (!blacklist.angleBrackets)
+                        return `${makeDigit(2)}<<${makeInternal(true)}`;
+                    return `${makeDigit(3)}+${makeInternal(true)}`;
+                },
+            },
+            5: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 5;
+                    if (!blacklist.angleBrackets)
+                        return `${makeDigit(4, true)}+${makeInternal(true)}`;
+                    return `${makeDigit(4)}+${makeInternal(true)}`;
+                },
+            },
+            6: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 6;
+                    if (!blacklist.angleBrackets)
+                        return `${makeDigit(3)}<<${makeInternal(true)}`;
+                    if (!blacklist.asterisk)
+                        return `${makeDigit(3, true)}*${makeDigit(2, true)}`;
+                    return `${makeDigit(5)}+${makeInternal(true)}`;
+                },
+            },
+            7: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 7;
+                    if (!blacklist.angleBrackets)
+                        return `${makeDigit(6, true)}+${makeInternal(true)}`;
+                    return `${makeDigit(6)}+${makeInternal(true)}`;
+                },
+            },
+            8: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 8;
+                    if (!blacklist.angleBrackets) return `${makeDigit(2)}<<${makeDigit(2)}`;
+                    if (!blacklist.asterisk)
+                        return `${makeDigit(2, true)}**${makeDigit(3, true)}`;
+                    return `${makeDigit(7)}+${makeInternal(true)}`;
+                },
+            },
+            9: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number) return 9;
+                    if (!blacklist.angleBrackets)
+                        return `${makeDigit(8, true)}+${makeInternal(true)}`;
+                    if (!blacklist.asterisk)
+                        return `${makeDigit(3, true)}**${makeDigit(2, true)}`;
+                    return `${makeDigit(8)}+${makeInternal(true)}`;
+                },
+            },
+        };
+
+        const CHARACTER = {
+            a: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("a");
+                    return `(${makeInternal(false)}+[])[${makeDigit(1)}]`;
+                },
+            },
+            b: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("b");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(2)}]`;
+                    return `${makeInternal("[object Array Iterator]", true)}[${makeDigit(
+                        2
+                    )}]`;
+                },
+            },
+            c: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("c");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(5)}]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(3)}]`;
+                },
+            },
+            d: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("d");
+                    return `(${makeInternal(undefined)}+[])[${makeDigit(2)}]`;
+                },
+            },
+            e: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("e");
+                    return `(${makeInternal(true)}+[])[${makeDigit(3)}]`;
+                },
+            },
+            f: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("f");
+                    return `(${makeInternal(false)}+[])[${makeDigit(0)}]`;
+                },
+            },
+            g: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("g");
+                    if (!blacklist.number)
+                        return `${makeInternal(
+                            "function String() { [native code] }",
+                            true
+                        )}[14]`;
+                    return `${makeInternal(
+                        "function String() { [native code] }",
+                        true
+                    )}[${makeDigit(1)}+[${makeDigit(4)}]]`;
+                },
+            },
+            h: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("h");
+                    if (!blacklist.number) return `(17)[${makeString("toString")}](20)`;
+                    return `(+(${makeDigit(1)}+[${makeDigit(7)}]))[${makeString(
+                        "toString"
+                    )}](${makeDigit(2)}+[${makeDigit(0)}])`;
+                },
+            },
+            i: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("i");
+                    if (!blacklist.number) return `(${makeInternal(undefined)}+[])[5]`;
+                    return `([${makeInternal(false)}]+${makeInternal(undefined)})[${makeDigit(
+                        1
+                    )}+[${makeDigit(0)}]]`;
+                },
+            },
+            j: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("j");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(3)}]`;
+                    return `${makeInternal("[object Array Iterator]", true)}[${makeDigit(
+                        3
+                    )}]`;
+                },
+            },
+            k: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("k");
+                    if (!blacklist.number) return `(20)[${makeString("toString")}](21)`;
+                    return `(+(${makeDigit(2)}+[${makeDigit(0)}]))[${makeString(
+                        "toString"
+                    )}](${makeDigit(2)}+[${makeDigit(1)}])`;
+                },
+            },
+            l: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("l");
+                    return `(${makeInternal(false)}+[])[${makeDigit(2)}]`;
+                },
+            },
+            m: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("m");
+                    if (!blacklist.number)
+                        return `((${makeDigit(0)})[${makeString("constructor")}]+[])[11]`;
+                    return `((${makeDigit(0)})[${makeString("constructor")}]+[])[${makeDigit(
+                        1
+                    )}+[${makeDigit(1)}]]`;
+                },
+            },
+            n: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("n");
+                    return `(${makeInternal(undefined)}+[])[${makeDigit(1)}]`;
+                },
+            },
+            o: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("o");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(1)}]`;
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[6]`;
+                    return `(${makeInternal(true)}+${makeInternal(
+                        "function flat() { [native code] }"
+                    )})[${makeDigit(1)}+[${makeDigit(0)}]]`;
+                },
+            },
+            p: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("p");
+                    if (!blacklist.number) return `(25)[${makeString("toString")}](30)`;
+                    return `(+(${makeDigit(2)}+[${makeDigit(5)}]))[${makeString(
+                        "toString"
+                    )}](${makeDigit(3)}+[${makeDigit(0)}])`;
+                },
+            },
+            q: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("q");
+                    if (!blacklist.number) return `(26)[${makeString("toString")}](30)`;
+                    return `(+(${makeDigit(2)}+[${makeDigit(6)}]))[${makeString(
+                        "toString"
+                    )}](${makeDigit(3)}+[${makeDigit(0)}])`;
+                },
+            },
+            r: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("r");
+                    return `(${makeInternal(true)}+[])[${makeDigit(1)}]`;
+                },
+            },
+            s: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("s");
+                    return `(${makeInternal(false)}+[])[${makeDigit(3)}]`;
+                },
+            },
+            t: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("t");
+                    return `(${makeInternal(true)}+[])[${makeDigit(0)}]`;
+                },
+            },
+            u: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("u");
+                    return `(${makeInternal(undefined)}+[])[${makeDigit(0)}]`;
+                },
+            },
+            v: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("v");
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[23]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(2)}+[${makeDigit(3)}]]`;
+                },
+            },
+            w: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("w");
+                    if (!blacklist.number) return `(32)[${makeString("toString")}](33)`;
+                    return `(+(${makeDigit(3)}+[${makeDigit(2)}]))[${makeString(
+                        "toString"
+                    )}](${makeDigit(3)}+[${makeDigit(3)}])`;
+                },
+            },
+            x: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("x");
+                    if (!blacklist.number) return `(33)[${makeString("toString")}](34)`;
+                    return `(+(${makeDigit(1)}+[${makeDigit(0)}]+[${makeDigit(
+                        1
+                    )}]))[${makeString("toString")}](${makeDigit(3)}+[${makeDigit(
+                        4
+                    )}])[${makeDigit(1)}]`;
+                },
+            },
+            y: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("y");
+                    if (!blacklist.number)
+                        return `(${makeInternal(Infinity)}+[])[${makeDigit(7)}]`;
+                    return `(${makeInternal(NaN)}+[${makeInternal(Infinity)}])[${makeDigit(
+                        1
+                    )}+[${makeDigit(0)}]]`;
+                },
+            },
+            z: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !isNoWrapString()) return wrapString("z");
+                    if (!blacklist.number) return `(35)[${makeString("toString")}](36)`;
+                    return `(+(${makeDigit(3)}+[${makeDigit(5)}]))[${makeString(
+                        "toString"
+                    )}](${makeDigit(3)}+[${makeDigit(6)}])`;
+                },
+            },
+
+            A: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("A");
+                    return `${makeInternal("[object Array Iterator]", true)}[${makeDigit(
+                        8
+                    )}]`;
+                },
+            },
+            B: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("B");
+                    if (!blacklist.number)
+                        return `((${makeInternal(false)})[${makeString("constructor")}]+[])[9]`;
+                    return `([${makeDigit(0)}]+(${makeInternal(false)})[${makeString(
+                        "constructor"
+                    )}])[${makeDigit(1)}+[${makeDigit(0)}]]`;
+                },
+            },
+            C: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("C");
+                    return `${makeInternal("%3Csub%3E%3C/sub%3E", true)}[${makeDigit(2)}]`;
+                },
+            },
+            D: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("D");
+                    if (!blacklist.number)
+                        return `${makeInternal(
+                            "function%20flat%28%29%20%7B%20%5Bnative%20code%5D%20%7D",
+                            true
+                        )}[48]`;
+                    return `${makeInternal(
+                        "function%20flat%28%29%20%7B%20%5Bnative%20code%5D%20%7D",
+                        true
+                    )}[[${makeDigit(4)}]+[${makeDigit(8)}]]`;
+                },
+            },
+            E: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("E");
+                    return `${makeInternal("%3Csub%3E%3C/sub%3E", true)}[${makeDigit(8)}]`;
+                },
+            },
+            I: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("I");
+                    return `(${makeInternal(Infinity)}+[])[${makeDigit(0)}]`;
+                },
+            },
+            N: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("N");
+                    return `(${makeInternal(NaN)}+[])[${makeDigit(0)}]`;
+                },
+            },
+            O: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("O");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(8)}]`;
+                    return makeEval(makeString('return unescape("%4f")'));
+                },
+            },
+            S: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.upperCase && !isNoWrapString()) return wrapString("S");
+                    if (!blacklist.number)
+                        return `${makeInternal(
+                            "function String() { [native code] }",
+                            true
+                        )}[9]`;
+                    return `(${makeDigit(0)}+${makeInternal(
+                        "function String() { [native code] }"
+                    )})[${makeDigit(1)}+[${makeDigit(0)}]]`;
+                },
+            },
+
+            0: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("0");
+                    return `${makeDigit(0, true)}+[]`;
+                },
+            },
+            1: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("1");
+                    return `${makeDigit(1, true)}+[]`;
+                },
+            },
+            2: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("2");
+                    return `${makeDigit(2, true)}+[]`;
+                },
+            },
+            3: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("3");
+                    return `${makeDigit(3, true)}+[]`;
+                },
+            },
+            4: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("4");
+                    return `${makeDigit(4, true)}+[]`;
+                },
+            },
+            5: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("5");
+                    return `${makeDigit(5, true)}+[]`;
+                },
+            },
+            6: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("6");
+                    return `${makeDigit(6, true)}+[]`;
+                },
+            },
+            7: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("7");
+                    return `${makeDigit(7, true)}+[]`;
+                },
+            },
+            8: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("8");
+                    return `${makeDigit(8, true)}+[]`;
+                },
+            },
+            9: {
+                isWrap: () => {
+                    if (!blacklist.number) return true;
+                    return false;
+                },
+                result: () => {
+                    if (!blacklist.number && !isNoWrapString()) return wrapString("9");
+                    return `${makeDigit(9, true)}+[]`;
+                },
+            },
+
+            " ": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.space && !isNoWrapString()) return wrapString(" ");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(7)}]`;
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[8]`;
+                    return `(${makeInternal(false)}+${makeInternal(
+                        "function flat() { [native code] }"
+                    )})[${makeDigit(2)}+[${makeDigit(0)}]]`;
+                },
+            },
+            $: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.dollar && !isNoWrapString()) return wrapString("$");
+                    return makeEval(makeString('return unescape("%24")'));
+                },
+            },
+            "\n": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.lowerCase && !blacklist.backslash && !isNoWrapString())
+                        return wrapString("\\n");
+                    return makeEval(makeString('return unescape("%0a")'));
+                },
+            },
+            "%": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.percent && !isNoWrapString()) return wrapString("%");
+                    if (!blacklist.number)
+                        return `${makeInternal(
+                            "function%20flat%28%29%20%7B%20%5Bnative%20code%5D%20%7D",
+                            true
+                        )}[8]`;
+                    return `${makeInternal(
+                        "function%20flat%28%29%20%7B%20%5Bnative%20code%5D%20%7D",
+                        true
+                    )}[${makeDigit(3)}+[${makeDigit(0)}]]`;
+                },
+            },
+            "*": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.asterisk && !isNoWrapString()) return wrapString("*");
+                    return makeEval(makeString('return unescape("%38")'));
+                },
+            },
+            _: {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.underscore && !isNoWrapString()) return wrapString("_");
+                    return makeEval(makeString('return unescape("%5f")'));
+                },
+            },
+            "=": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.equals && !isNoWrapString()) return wrapString("=");
+                    if (!blacklist.number)
+                        return `${makeInternal('<font color="undefined"></font>', true)}[11]`;
+                    return `${makeInternal(
+                        '<font color="undefined"></font>',
+                        true
+                    )}[${makeDigit(1)}+[${makeDigit(1)}]]`;
+                },
+            },
+            "+": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!isNoWrapString()) return wrapString("+");
+                    return `(${makeInternal(1.1e101)}+[])[${makeDigit(4)}]`;
+                },
+            },
+            "'": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.singleQuotes) {
+                        if (!blacklist.doubleQuotes) return `"'"`;
+                        if (!blacklist.backtick) return "`'`";
+                        if (!blacklist.backslash) return `'\\''`;
+                    }
+
+                    return makeEval(makeString('return unescape("%27")'));
+                },
+            },
+            '"': {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.doubleQuotes) {
+                        if (!blacklist.singleQuotes) return `'"'`;
+                        if (!blacklist.backtick) return '`"`';
+                        if (!blacklist.backslash) return `"\\""`;
+                    }
+
+                    if (!blacklist.number)
+                        return `${makeInternal('<font color="undefined"></font>', true)}[12]`;
+                    return `${makeInternal(
+                        '<font color="undefined"></font>',
+                        true
+                    )}[${makeDigit(1)}+[${makeDigit(2)}]]`;
+                },
+            },
+            ".": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.dot && !isNoWrapString()) return wrapString(".");
+                    if (!blacklist.slash)
+                        return `((${makeDigit(1, true)}/${makeDigit(2, true)})+[])[${makeDigit(
+                            1
+                        )}]`;
+                    return `(${makeInternal(1.1e101)}+[])[${makeDigit(1)}]`;
+                },
+            },
+            "/": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.slash && !isNoWrapString()) return wrapString("/");
+                    if (!blacklist.number) return `${makeInternal("<sub></sub>", true)}[6]`;
+                    return `(${makeInternal(true)}+${makeInternal(
+                        "<sub></sub>"
+                    )})[${makeDigit(1)}+[${makeDigit(0)}]]`;
+                },
+            },
+            "\\": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.backslash && !isNoWrapString()) return wrapString("\\\\");
+                    return makeEval(makeString('return unescape("%5c")'));
+                },
+            },
+            "(": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!isNoWrapString()) return wrapString("(");
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[13]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(1)}+[${makeDigit(3)}]]`;
+                },
+            },
+            ")": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!isNoWrapString()) return wrapString(")");
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[14]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(1)}+[${makeDigit(4)}]]`;
+                },
+            },
+            "{": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.curlyBrackets && !isNoWrapString()) return wrapString("{");
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[16]`;
+                    return `(${makeInternal(true)}+${makeInternal(
+                        "function flat() { [native code] }"
+                    )})[${makeDigit(2)}+[${makeDigit(0)}]]`;
+                },
+            },
+            "}": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.curlyBrackets && !isNoWrapString()) return wrapString("}");
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[32]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(3)}+[${makeDigit(2)}]]`;
+                },
+            },
+            "[": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!isNoWrapString()) return wrapString("[");
+                    if (!blacklist.curlyBrackets)
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(0)}]`;
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[18]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(1)}+[${makeDigit(8)}]]`;
+                },
+            },
+            "]": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!isNoWrapString()) return wrapString("]");
+
+                    if (!blacklist.curlyBrackets) {
+                        if (!blacklist.number)
+                            return `${makeInternal("[object Object]", true)}[14]`;
+                        return `${makeInternal("[object Object]", true)}[${makeDigit(
+                            1
+                        )}+[${makeDigit(4)}]]`;
+                    }
+
+                    if (!blacklist.number)
+                        return `${makeInternal("function flat() { [native code] }", true)}[30]`;
+                    return `${makeInternal(
+                        "function flat() { [native code] }",
+                        true
+                    )}[${makeDigit(3)}+[${makeDigit(0)}]]`;
+                },
+            },
+            "<": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.angleBrackets && !isNoWrapString()) return wrapString("<");
+                    return `${makeInternal("<sub></sub>", true)}[${makeDigit(0)}]`;
+                },
+            },
+            ">": {
+                isWrap: () => {
+                    return true;
+                },
+                result: () => {
+                    if (!blacklist.angleBrackets && !isNoWrapString()) return wrapString(">");
+                    return `${makeInternal("<sub></sub>", true)}[${makeDigit(4)}]`;
+                },
+            },
+        };
+
+        const wrapString = (value) => {
+            if (!blacklist.singleQuotes) return `'${value}'`;
+            if (!blacklist.doubleQuotes) return `"${value}"`;
+            if (!blacklist.backtick) return "`" + value + "`";
+
+            throw new Error("wrapString() Error: All quote types are blacklisted.");
+        };
+
+        const isNoWrapString = () => {
+            return blacklist.singleQuotes && blacklist.doubleQuotes && blacklist.backtick;
+        };
+
+        const makeInternal = (value, wrap = false) => {
+            if (!internalResults.hasOwnProperty(value)) {
+                internalResults[value] = INTERNAL[value].result();
+            }
+
+            if (wrap && !INTERNAL[value].isWrap()) {
+                return "(" + internalResults[value] + ")";
+            } else {
+                return internalResults[value];
+            }
+        };
+
+        const makeDigit = (value, wrap = false) => {
+            if (!digitResults.hasOwnProperty(value)) {
+                digitResults[value] = DIGIT[value].result();
+            }
+
+            if (wrap && !DIGIT[value].isWrap()) {
+                return "(" + digitResults[value] + ")";
+            } else {
+                return digitResults[value];
+            }
+        };
+
+        const makeCharacter = (value, wrap = false) => {
+            if (!characterResults.hasOwnProperty(value)) {
+                if (!CHARACTER[value]) {
+                    throw new Error(`Character '${value}' cannot be generated.`);
+                }
+                characterResults[value] = CHARACTER[value].result();
+            }
+
+            if (wrap && !CHARACTER[value].isWrap()) {
+                return "(" + characterResults[value] + ")";
+            } else {
+                return characterResults[value];
+            }
+        };
+
+        const makeString = (value, wrap = false) => {
+            const results = [];
+
+            for (const char of value) {
+                results.push(makeCharacter(char, true));
+            }
+
+            if (wrap) {
+                return "(" + results.join("+") + ")";
+            } else {
+                return results.join("+");
+            }
+        };
+
+        const makeEval = (value) => {
+            return `[][${makeString("flat")}][${makeString("constructor")}](${value})()`;
+        };
+
+        const createVariableNames = (candidates, variableCount) => {
+            const results = [];
+            let length = 1;
+
+            const createPermutation = (goalLength, variableName = "") => {
+                if (results.length >= variableCount) {
+                    return;
+                }
+
+                if (variableName.length === goalLength) {
+                    if (results.length < variableCount) {
+                        results.push(variableName);
+                    }
+                    return;
+                }
+
+                for (let i = 0; i < candidates.length; i++) {
+                    if (results.length < variableCount) {
+                        createPermutation(goalLength, variableName + candidates[i]);
+                    } else {
+                        break;
+                    }
+                }
+            };
+
+            if (candidates.length > 0) {
+                while (results.length < variableCount) {
+                    createPermutation(length);
+                    length++;
+                }
+            }
+
+            return results;
+        };
+
+        const obfuscate = (jsCode, variableCandidates = [], iterationCount = 50) => {
+            // *** FIX: Reset memoization cache for each run ***
+            resetResults();
+
+            const results = [];
+
+            for (const char of jsCode) {
+                let makedCode;
+
+                if (CHARACTER.hasOwnProperty(char)) {
+                    makedCode = makeCharacter(char, true);
+                } else {
+                    if (
+                        (blacklist.upperCase && char >= "A" && char <= "Z") ||
+                        isNoWrapString()
+                    ) {
+                        const hexCode = char.charCodeAt().toString(16);
+                        makedCode = makeEval(
+                            makeString(
+                                `return unescape("${hexCode.length >= 2 ? (hexCode.length === 2 ? `%${hexCode}` : `\\u${("000" + hexCode).slice(-4)}`) : `%${hexCode}`
+                                }")`
+                            )
+                        );
+                    } else {
+                        makedCode = wrapString(char);
+                    }
+                }
+
+                results.push(makedCode);
+            }
+
+            let presetCode = "";
+            let resultCode = makeEval(results.join("+"));
+
+            if (!option.useVariable) {
+                return resultCode;
+            }
+
+            if (!blacklist.dollar) variableCandidates.push("$");
+            if (!blacklist.underscore) variableCandidates.push("_");
+
+            variableCandidates = [...new Set(variableCandidates)];
+            let variableNames = createVariableNames(variableCandidates, 50);
+
+            const makeShorter = (targetCode) => {
+                if (variableNames.length === 0) {
+                    return;
+                }
+
+                let variableCode = `${variableNames[0]}=${targetCode};`;
+                let replaceCode = replaceAll(resultCode, targetCode, variableNames[0]);
+
+                if (replaceCode.length + variableCode.length < resultCode.length) {
+                    presetCode += variableCode;
+                    resultCode = replaceCode;
+                    variableNames = variableNames.slice(1);
+                }
+            };
+
+            makeShorter(makeString("toString"));
+            makeShorter(makeString("constructor"));
+            makeShorter(makeString("flat"));
+
+            const copyPresetCode = presetCode;
+            const copyResultCode = resultCode;
+            const copyvariableNames = [...variableNames];
+
+            let minPresetCode = presetCode;
+            let minResultCode = resultCode;
+
+            // Find min code at random
+            for (let i = 0; i < iterationCount; i++) {
+                const candidates = [];
+                const shuffle = [];
+
+                for (const key in characterResults) {
+                    if (characterResults[key].indexOf(`'`) !== -1) continue;
+                    if (characterResults[key].indexOf(`"`) !== -1) continue;
+                    if (characterResults[key].indexOf("`") !== -1) continue;
+
+                    candidates.push(characterResults[key]);
+                }
+
+                while (candidates.length > 0) {
+                    const chosen = candidates.splice(
+                        Math.floor(Math.random() * candidates.length),
+                        1
+                    )[0];
+                    shuffle.push(chosen);
+                }
+
+                shuffle.forEach((v) => {
+                    makeShorter(v);
+                });
+
+                if (minResultCode.length > resultCode.length) {
+                    minPresetCode = presetCode;
+                    minResultCode = resultCode;
+                }
+
+                presetCode = copyPresetCode;
+                resultCode = copyResultCode;
+                variableNames = [...copyvariableNames];
+            }
+
+            // Final check for variable names to ensure they don't conflict with keywords
+            const finalPreset = minPresetCode.slice(0, -1); // remove last semicolon
+            if (finalPreset.length > 0) {
+                return `(()=>{var ${finalPreset};return ${minResultCode}})()`;
+            }
+            return minResultCode;
+
+        };
+
+        const replaceAll = (targetString, searchString, replaceString) => {
+            // Use a regex with 'g' flag for a more robust replaceAll
+            return targetString.split(searchString).join(replaceString);
+        };
+
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Element References ---
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const inputCodeEl = document.getElementById('input-code');
+            const outputCodeEl = document.getElementById('output-code');
+            const obfuscateBtn = document.getElementById('obfuscate-btn');
+            const copyBtn = document.getElementById('copy-btn');
+            const toastEl = document.getElementById('toast-notification');
+
+            // --- Theme Toggler Logic ---
+            const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>`;
+            const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>`;
+
+            const applyTheme = (theme) => {
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+                themeToggleBtn.innerHTML = theme === 'dark' ? sunIcon : moonIcon;
+            };
+
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+
+            themeToggleBtn.addEventListener('click', () => {
+                const newTheme = document.documentElement.classList.toggle('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', newTheme);
+                applyTheme(newTheme);
+            });
+
+            // --- Toast Notification Logic ---
+            const showToast = (message) => {
+                toastEl.textContent = message;
+                toastEl.classList.add('show');
+                setTimeout(() => {
+                    toastEl.classList.remove('show');
+                }, 2500);
+            };
+
+            // --- Core Application Logic ---
+            obfuscateBtn.addEventListener('click', () => {
+                const jsCode = inputCodeEl.value;
+                if (!jsCode.trim()) {
+                    outputCodeEl.value = 'Please enter some JavaScript code first.';
+                    return;
+                }
+
+                try {
+                    outputCodeEl.value = 'Obfuscating...';
+                    // Use setTimeout to prevent UI freeze for complex code
+                    setTimeout(() => {
+                        const obfuscatedCode = obfuscate(jsCode);
+                        outputCodeEl.value = obfuscatedCode;
+                    }, 50);
+                } catch (error) {
+                    console.error('Obfuscation Error:', error);
+                    outputCodeEl.value = `Error during obfuscation:\n\n${error.message}\n\nThis might happen if your code contains characters that cannot be generated with the current blacklist settings.`;
+                }
+            });
+
+            copyBtn.addEventListener('click', () => {
+                const codeToCopy = outputCodeEl.value;
+                if (!codeToCopy || codeToCopy.startsWith('Please') || codeToCopy.startsWith('Error')) {
+                    showToast('Nothing to copy!');
+                    return;
+                }
+
+                navigator.clipboard.writeText(codeToCopy).then(() => {
+                    showToast('✅ Copied to clipboard!');
+                }).catch(err => {
+                    console.error('Copy failed', err);
+                    showToast('❌ Copy failed!');
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
