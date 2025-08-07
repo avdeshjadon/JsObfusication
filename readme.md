@@ -2,7 +2,7 @@
 
 A powerful, easy-to-use **JavaScript Obfuscator** tool built with 💻 HTML, CSS, and JS — designed to protect your source code from prying eyes 👁️‍🗨️ by making it unreadable.
 
-> 🔗 **Live Demo**: [Click Here to Use the Tool](https://avdeshjadon-dev.github.io/JsObfusicator/)
+> 🔗 **Live Demo**: [Click Here to Use the Tool](https://avdeshjadon.github.io/JsObfusicator/)
 
 ---
 
@@ -18,7 +18,7 @@ A powerful, easy-to-use **JavaScript Obfuscator** tool built with 💻 HTML, CSS
 
 ## 🚀 How to Use
 
-1. 🧩 Open the [Live App](https://avdeshjadon-dev.github.io/JsObfusicator/)
+1. 🧩 Open the [Live App](https://avdeshjadon.github.io/JsObfusicator/)
 2. 📋 **Copy & paste** your JavaScript code into the input box
 3. ⚙️ Click on **"Obfuscate"**
 4. 💾 Click **"Download"** to save the protected code
@@ -38,5 +38,5 @@ Obfuscation helps you:
 ## 🙌 Author
 
 Made with ❤️ by **Avdesh Jadon**  
-📍 [GitHub Profile](https://github.com/avdeshjadon-dev)
+📍 [GitHub Profile](https://github.com/avdeshjadon)
 
